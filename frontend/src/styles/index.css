@@ -15,7 +15,7 @@ h2 { font-size: 18px; }
 .auth-subtitle { margin: -8px 0 0; color: #69766f; }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; }
 .topbar div { display: flex; align-items: center; gap: 12px; }
-.primary { background: #2f7d68; color: white; border-color: #2f7d68; }
+.primary { background: #41a94f; color: white; border-color: #41a94f; }
 .segmented { display: flex; gap: 6px; margin-bottom: 12px; }
 .segmented button.active { background: #1f3d35; color: white; border-color: #1f3d35; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
@@ -23,9 +23,9 @@ h2 { font-size: 18px; }
 .metric { border-radius: 8px; padding: 18px; color: #fff; }
 .metric span { display: block; opacity: .9; margin-bottom: 8px; }
 .metric strong { font-size: 26px; }
-.metric.good { background: #2f7d68; }
+.metric.neutral { background: #1f1e1e; }
+.metric.good { background: #41a94f; }
 .metric.bad { background: #9b3d35; }
-.metric.neutral { background: #384b6b; }
 .grid { display: grid; grid-template-columns: 1fr 1.25fr; gap: 14px; margin-bottom: 14px; }
 .form-grid, .filters { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px; }
 .filters { grid-template-columns: repeat(5, minmax(120px, 1fr)); }

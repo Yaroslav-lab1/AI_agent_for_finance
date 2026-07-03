@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from "recharts";
 import * as api from "../api";
 import { errorMessage } from "../api/client";
 import type { Category, ImportCandidate, ImportPreview, Transaction, User } from "../types/api";
 
 const today = new Date().toISOString().slice(0, 10);
+
+const COLORS = ['#2d7dc4', '#35c3a9', '#e0a72c', '#999596', '#9a3fcb', '#d13d62', '#4394c9', '#d4ac46'];
 
 export function DashboardPage({ user, onLogout }: { user: User; onLogout: () => void }) {
   const qc = useQueryClient();
@@ -21,6 +23,13 @@ export function DashboardPage({ user, onLogout }: { user: User; onLogout: () => 
     qc.invalidateQueries({ queryKey: ["expenses"] });
   };
 
+  const expenseData = expenses.data ?? [];
+  const sortedCategoryNames = [...expenseData].map(item => item.category_name).sort();
+  const colorMap: Record<string, string> = {};
+  sortedCategoryNames.forEach((name, index) => {
+    colorMap[name] = COLORS[index % COLORS.length];
+  });
+
   return (
     <main>
       <header className="topbar">
@@ -29,9 +38,9 @@ export function DashboardPage({ user, onLogout }: { user: User; onLogout: () => 
       </header>
       {error && <div className="banner">{error}<button onClick={() => setError("")}>×</button></div>}
       <section className="summary">
+        <Metric label="Баланс" value={summary.data?.balance ?? "0.00"} tone="neutral" />
         <Metric label="Доход" value={summary.data?.income_total ?? "0.00"} tone="good" />
         <Metric label="Расход" value={summary.data?.expense_total ?? "0.00"} tone="bad" />
-        <Metric label="Баланс" value={summary.data?.balance ?? "0.00"} tone="neutral" />
       </section>
       <section className="grid">
         <TransactionForm categories={categories.data ?? []} onDone={refresh} onError={(e) => setError(errorMessage(e))} />
@@ -39,16 +48,31 @@ export function DashboardPage({ user, onLogout }: { user: User; onLogout: () => 
       </section>
       <section className="panel">
         <h2>Расходы по категориям</h2>
-        {(expenses.data?.length ?? 0) > 0 ? (
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={expenses.data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category_name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="amount" fill="#2f7d68" />
-            </BarChart>
-          </ResponsiveContainer>
+        {expenseData.length > 0 ? (
+          <div style={{ height: 280, width: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={expenseData.map(item => ({
+                    ...item,
+                    amount: Number(item.amount)
+                  }))}
+                  dataKey="amount"
+                  nameKey="category_name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  innerRadius={80}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {expenseData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={colorMap[entry.category_name] || '#8884d8'} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `${Number(value).toFixed(2)} ₽`} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         ) : <p className="muted">Расходов пока нет</p>}
       </section>
       <TransactionTable
