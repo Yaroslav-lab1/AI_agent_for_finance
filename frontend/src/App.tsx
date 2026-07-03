@@ -18,5 +18,5 @@ export default function App() {
 
   if (loading) return <main className="center">Загрузка...</main>;
   if (!user) return <AuthPage onAuth={setUser} />;
-  return <DashboardPage user={user} onLogout={() => { localStorage.removeItem("access_token"); setUser(null); }} />;
+  return <DashboardPage user={user} onUserChange={setUser} onLogout={() => { localStorage.removeItem("access_token"); setUser(null); }} />;
 }

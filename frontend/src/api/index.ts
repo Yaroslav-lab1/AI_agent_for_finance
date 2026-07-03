@@ -13,6 +13,10 @@ export async function me(): Promise<User> {
   return (await api.get("/auth/me")).data;
 }
 
+export async function updateMe(payload: Record<string, string>): Promise<User> {
+  return (await api.patch("/auth/me", compactParams(payload))).data;
+}
+
 export async function categories(): Promise<Category[]> {
   return (await api.get("/categories")).data;
 }
@@ -33,12 +37,12 @@ export async function deleteTransaction(id: string): Promise<void> {
   await api.delete(`/transactions/${id}`);
 }
 
-export async function summary(): Promise<Summary> {
-  return (await api.get("/stats/summary")).data;
+export async function summary(params: Record<string, string> = {}): Promise<Summary> {
+  return (await api.get("/stats/summary", { params: compactParams(params) })).data;
 }
 
-export async function expensesByCategory(): Promise<ExpenseByCategory[]> {
-  return (await api.get("/stats/expenses-by-category")).data;
+export async function expensesByCategory(params: Record<string, string> = {}): Promise<ExpenseByCategory[]> {
+  return (await api.get("/stats/expenses-by-category", { params: compactParams(params) })).data;
 }
 
 export async function importText(text: string): Promise<ImportPreview> {

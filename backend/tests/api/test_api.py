@@ -29,6 +29,53 @@ async def test_auth_register_duplicate_login_me(client):
 
 
 @pytest.mark.asyncio
+async def test_auth_update_profile_and_password(client):
+    payload = {"email": "profile@example.com", "username": "profile", "display_name": "Profile", "password": "strong-password"}
+    assert (await client.post("/api/auth/register", json=payload)).status_code == 201
+    login = await client.post("/api/auth/login", json=payload)
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+    updated = await client.patch(
+        "/api/auth/me",
+        json={
+            "email": "new-profile@example.com",
+            "username": "new_profile",
+            "display_name": "New Profile",
+            "current_password": "strong-password",
+        },
+        headers=headers,
+    )
+    assert updated.status_code == 200
+    assert updated.json()["email"] == "new-profile@example.com"
+    assert updated.json()["username"] == "new_profile"
+    assert updated.json()["display_name"] == "New Profile"
+
+    password_update = await client.patch(
+        "/api/auth/me",
+        json={"current_password": "strong-password", "new_password": "new-strong-password"},
+        headers=headers,
+    )
+    assert password_update.status_code == 200
+    assert (await client.post("/api/auth/login", json={"email": "new-profile@example.com", "password": "strong-password"})).status_code == 401
+    assert (await client.post("/api/auth/login", json={"email": "new-profile@example.com", "password": "new-strong-password"})).status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_auth_update_profile_conflicts(client):
+    first = {"email": "first@example.com", "username": "first", "display_name": "First", "password": "strong-password"}
+    second = {"email": "second@example.com", "username": "second", "display_name": "Second", "password": "strong-password"}
+    assert (await client.post("/api/auth/register", json=first)).status_code == 201
+    assert (await client.post("/api/auth/register", json=second)).status_code == 201
+    login = await client.post("/api/auth/login", json=first)
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+    assert (await client.patch("/api/auth/me", json={"display_name": "No Password"}, headers=headers)).status_code == 400
+    assert (await client.patch("/api/auth/me", json={"email": "second@example.com", "current_password": "strong-password"}, headers=headers)).status_code == 409
+    assert (await client.patch("/api/auth/me", json={"username": "second", "current_password": "strong-password"}, headers=headers)).status_code == 409
+    assert (await client.patch("/api/auth/me", json={"current_password": "wrong-password", "new_password": "new-strong-password"}, headers=headers)).status_code == 400
+
+
+@pytest.mark.asyncio
 async def test_transactions_crud_and_user_scope(client, db_session):
     headers = await auth_headers(client, "one@example.com")
     other_headers = await auth_headers(client, "two@example.com")
