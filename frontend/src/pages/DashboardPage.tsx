@@ -9,7 +9,7 @@ import type { Category, ExpenseByCategory, ImportCandidate, ImportPreview, Trans
 const today = new Date().toISOString().slice(0, 10);
 const currentMonth = today.slice(0, 7);
 
-const COLORS = ['#2d7dc4', '#35c3a9', '#e0a72c', '#999596', '#9a3fcb', '#d13d62', '#4394c9', '#d4ac46'];
+const COLORS = ['#999596', '#35c3a9', '#e0a72c', '#2d7dc4', '#9a3fcb', '#d13d62', '#74c943', '#d4ac46'];
 
 type SortField = "occurred_at" | "operation_type" | "amount" | "category" | "comment" | "source";
 type SortDirection = "asc" | "desc";
@@ -57,6 +57,13 @@ export function DashboardPage({ user, onUserChange, onLogout }: { user: User; on
     sortedCategoryNames.forEach((name, index) => {
       map[name] = COLORS[index % COLORS.length];
     });
+    map["Продукты"] = '#74c943';
+    map["Транспорт"] = '#9a3fcb';
+    map["Здоровье"] = '#35c3a9';
+    map["Кафе и рестораны"] = "#e7a53c";
+    map["Переводы"] = '#2d7dc4';
+    map["Развлечения"] = '#d13d62';
+    map["Другое"] = '#999596';
     return map;
   }, [expenseData, monthlyExpenseData]);
 
@@ -78,8 +85,8 @@ export function DashboardPage({ user, onUserChange, onLogout }: { user: User; on
         <Metric label="Расход" value={summary.data?.expense_total ?? "0.00"} tone="bad" />
       </section>
       <section className="grid">
-        <TransactionForm categories={categories.data ?? []} onDone={refresh} onError={(e) => setError(errorMessage(e))} />
         <ImportPanel categories={categories.data ?? []} onDone={refresh} onError={(e) => setError(errorMessage(e))} />
+        <TransactionForm categories={categories.data ?? []} onDone={refresh} onError={(e) => setError(errorMessage(e))} />
       </section>
       <section className="panel expense-panel">
         <div className="expense-header">
@@ -200,7 +207,7 @@ function ExpensePieChart({ data, colorMap, balance, emptyMessage }: { data: Expe
             cy="46%"
             outerRadius={92}
             innerRadius={78}
-            paddingAngle={2}
+            stroke="none"
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={colorMap[entry.category_name] || "#8884d8"} />
