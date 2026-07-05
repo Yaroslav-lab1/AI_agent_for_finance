@@ -199,7 +199,7 @@ function ExpensePieChart({ data, colorMap, balance, emptyMessage }: { data: Expe
             cx="50%"
             cy="46%"
             outerRadius={92}
-            innerRadius={68}
+            innerRadius={78}
             paddingAngle={2}
           >
             {chartData.map((entry, index) => (
