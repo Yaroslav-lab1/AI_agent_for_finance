@@ -28,9 +28,9 @@ h3 { margin: 0; font-size: 15px; color: #fff; }
 .metric { border-radius: 8px; padding: 18px; color: #fff; }
 .metric span { display: block; opacity: .9; margin-bottom: 8px; }
 .metric strong { font-size: 26px; }
-.metric.neutral { background: #2078cf; padding: 24px 24px; border-radius: 20px; }
-.metric.neutral strong { font-size: 42px; }
-.metric.neutral span { font-size: 20px; opacity: 0.8; }
+.metric.neutral { background: #2078cf; padding: 55px 24px; border-radius: 20px; }
+.metric.neutral strong { font-size: 60px; }
+.metric.neutral span { font-size: 24px; opacity: 0.8; }
 .metric.good, .metric.bad { padding: 24px 16px; border-radius: 20px; background: #262B32; }
 .metric.good strong, .metric.bad strong {font-size: 28px; }
 .metric.good span, .metric.bad span { font-size: 18px; opacity: 0.6; }
@@ -47,7 +47,7 @@ h3 { margin: 0; font-size: 15px; color: #fff; }
 .import-panel.has-preview .import-input-area { min-height: 170px; }
 .import-textarea, .file-dropzone { width: 100%; min-height: 100%; color: #fff; }
 .file-dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px dashed #b9c5be; border-radius: 8px; background: #5c6166; color: #fff; cursor: pointer; text-align: center; padding: 18px; }
-.file-dropzone:hover { border-color: #41a94f; background: #5c6166; color: #fff; }
+.file-dropzone:hover { border-color: #2078cf; background: #5c6166; color: #fff; }
 .file-dropzone input { display: none; }
 .file-dropzone-title { font-size: 18px; font-weight: 700; color: #fff; }
 .file-dropzone-text { max-width: 420px; color: #fff; line-height: 1.35; overflow-wrap: anywhere; }
@@ -82,7 +82,7 @@ table { width: 100%; border-collapse: collapse; min-width: 760px; }
 th, td { text-align: left; padding: 10px; vertical-align: middle; }
 th { color: #fff; font-size: 13px; }
 .comment-cell { width: 30ch; max-width: 30ch; white-space: normal; overflow-wrap: anywhere; word-break: normal; }
-.sort-header { width: auto; border: 10px; background: #5c6166; color: #fff; padding: 0; font-size: inherit; font-weight: 700; text-align: left; white-space: nowrap; border-radius: 3px; }
+.sort-header { width: auto; border: 10px; background: #2078cf; color: #fff; padding: 1ex; padding-left: 1vw; padding-right: 1vw; font-size: inherit; font-weight: 700; text-align: center; min-width: 5vw; white-space: nowrap; border-radius: 7px; }
 .sort-header:hover { color: #fff; text-decoration: underline; }
 td input, td select { min-width: 110px; }
 .warn-row { background: #5c6166; }
@@ -97,4 +97,29 @@ td input, td select { min-width: 110px; }
 }
 input[placeholder="Поиск"]::placeholder {
   color: #fff;   
+}
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.left-column {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 14px;
+}
+.income-expense-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.right-column {
+  display: flex;
+  flex-direction: column;
+}
+.right-column .import-panel {
+  flex: 1;
+  height: 100%;
+  margin: 0;
 }

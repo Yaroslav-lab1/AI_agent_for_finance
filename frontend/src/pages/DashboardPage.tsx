@@ -79,15 +79,22 @@ export function DashboardPage({ user, onUserChange, onLogout }: { user: User; on
       </header>
       {error && <div className="banner">{error}<button onClick={() => setError("")}>×</button></div>}
       {profileOpen && <ProfilePanel user={user} onUserChange={onUserChange} onError={(e) => setError(errorMessage(e))} />}
-      <section className="summary">
-        <Metric label="Баланс" value={summary.data?.balance ?? "0.00"} tone="neutral" />
-        <Metric label="Доход" value={summary.data?.income_total ?? "0.00"} tone="good" />
-        <Metric label="Расход" value={summary.data?.expense_total ?? "0.00"} tone="bad" />
-      </section>
-      <section className="grid">
-        <ImportPanel categories={categories.data ?? []} onDone={refresh} onError={(e) => setError(errorMessage(e))} />
-        <TransactionForm categories={categories.data ?? []} onDone={refresh} onError={(e) => setError(errorMessage(e))} />
-      </section>
+
+      <div className="dashboard-layout">
+        <div className="left-column">
+          <div className="balance-block">
+            <Metric label="Баланс" value={summary.data?.balance ?? "0.00"} tone="neutral" />
+          </div>
+          <div className="income-expense-row">
+            <Metric label="Доход" value={summary.data?.income_total ?? "0.00"} tone="good" />
+            <Metric label="Расход" value={summary.data?.expense_total ?? "0.00"} tone="bad" />
+          </div>
+        </div>
+        <div className="right-column">
+          <ImportPanel categories={categories.data ?? []} onDone={refresh} onError={(e) => setError(errorMessage(e))} />
+        </div>
+      </div>
+
       <section className="panel expense-panel">
         <div className="expense-header">
           <h2>Расходы по категориям</h2>
@@ -261,7 +268,6 @@ function TransactionForm({ categories, onDone, onError }: { categories: Category
   const categoryId = form.category_id || filteredCategories[0]?.id || "";
   return (
     <form className="panel transaction-form" onSubmit={(e) => { e.preventDefault(); if (!Number(form.amount) || Number(form.amount) <= 0) return onError(new Error("Сумма должна быть больше 0")); mutation.mutate({ ...form, category_id: categoryId }); }}>
-      <h2>Новая операция</h2>
       <div className="form-grid">
         <label>Сумма<input value={form.amount} type="number" step="0.01" min="0.01" onChange={(e) => setForm({ ...form, amount: e.target.value })} /></label>
         <label>Тип<select value={form.operation_type} onChange={(e) => setForm({ ...form, operation_type: e.target.value, category_id: "" })}><option value="expense">Расход</option><option value="income">Доход</option></select></label>
@@ -304,7 +310,7 @@ function TransactionTable(props: { transactions: Transaction[]; categories: Cate
 
   return (
     <section className="panel">
-      <h2>Операции</h2>
+      <h2>История операций</h2>
       <div className="filters">
         <input type="date" value={f.date_from ?? ""} onChange={(e) => props.setFilters({ ...f, date_from: e.target.value })} />
         <input type="date" value={f.date_to ?? ""} onChange={(e) => props.setFilters({ ...f, date_to: e.target.value })} />
@@ -344,35 +350,67 @@ function transactionSortValue(transaction: Transaction, field: SortField) {
 }
 
 function ImportPanel({ categories, onDone, onError }: { categories: Category[]; onDone: () => void; onError: (e: unknown) => void }) {
-  const [mode, setMode] = useState<"text" | "csv" | "image">("text");
-  const [text, setText] = useState("01.07.2026 Списание 349,90 RUB Перекрёсток\n01.07.2026 Зачисление 5000,00 RUB Перевод от Иван\n02.07.2026 Списание 220,00 RUB Метро");
+  const [mode, setMode] = useState<"text" | "csv" | "image" | "manual">("text");
+  const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
   const importMutation = useMutation({
     mutationFn: () => mode === "text" ? api.importText(text) : api.importFile(mode, file!),
     onSuccess: (data) => { setPreview(data); setSelected(new Set(data.candidates.filter((c) => c.duplicate_status !== "exact_duplicate").map((c) => c.id))); },
     onError
   });
-  const confirmMutation = useMutation({ mutationFn: () => api.confirmImport(preview!.job.id, Array.from(selected)), onSuccess: () => { setPreview(null); onDone(); }, onError });
+
+  const confirmMutation = useMutation({
+    mutationFn: () => api.confirmImport(preview!.job.id, Array.from(selected)),
+    onSuccess: () => { setPreview(null); onDone(); },
+    onError
+  });
+
+  function handleModeChange(newMode: typeof mode) {
+    setMode(newMode);
+  }
+
   return (
     <section className={`panel import-panel ${preview ? "has-preview" : ""}`}>
-      <h2>AI-импорт операций</h2>
-      <div className="segmented"><button className={mode === "text" ? "active" : ""} onClick={() => setMode("text")}>Текст</button><button className={mode === "csv" ? "active" : ""} onClick={() => setMode("csv")}>CSV</button><button className={mode === "image" ? "active" : ""} onClick={() => setMode("image")}>Изображение</button></div>
-      <div className="import-input-area">
-        {mode === "text" ? (
-          <textarea className="import-textarea" value={text} onChange={(e) => setText(e.target.value)} />
-        ) : (
-          <label className="file-dropzone">
-            <input type="file" accept={mode === "csv" ? ".csv,text/csv" : ".png,.jpg,.jpeg,.webp"} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-            <span className="file-dropzone-title">{mode === "csv" ? "Выберите CSV-файл" : "Выберите изображение"}</span>
-            <span className="file-dropzone-text">{file ? file.name : "Нажмите сюда, чтобы выбрать файл"}</span>
-          </label>
-        )}
+      <h2>Новая операция с ИИ-агентом</h2>
+      <div className="segmented">
+        <button className={mode === "text" ? "active" : ""} onClick={() => handleModeChange("text")}>Текст</button>
+        <button className={mode === "csv" ? "active" : ""} onClick={() => handleModeChange("csv")}>CSV</button>
+        <button className={mode === "image" ? "active" : ""} onClick={() => handleModeChange("image")}>Изображение</button>
+        <button className={mode === "manual" ? "active" : ""} onClick={() => handleModeChange("manual")}>Ручной ввод</button>
       </div>
-      <button className="primary" disabled={importMutation.isPending || (mode !== "text" && !file)} onClick={() => importMutation.mutate()}>Распознать</button>
-      {preview && <CandidateReview candidates={preview.candidates} categories={categories} selected={selected} setSelected={setSelected} onError={onError} />}
-      {preview && <div className="actions"><button className="primary" disabled={confirmMutation.isPending || selected.size === 0} onClick={() => confirmMutation.mutate()}>Подтвердить выбранные</button><button disabled={confirmMutation.isPending} onClick={() => { setSelected(new Set()); confirmMutation.mutate(); }}>Отклонить все</button><button onClick={() => setPreview(null)}>Новый импорт</button></div>}
+
+      {mode === "manual" ? (
+        <TransactionForm key="manual-form" categories={categories} onDone={onDone} onError={onError} />
+      ) : (
+        <>
+          <div className="import-input-area">
+            {mode === "text" ? (
+              <textarea className="import-textarea" value={text} onChange={(e) => setText(e.target.value)} />
+            ) : (
+              <label className="file-dropzone">
+                <input type="file" accept={mode === "csv" ? ".csv,text/csv" : ".png,.jpg,.jpeg,.webp"} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+                <span className="file-dropzone-title">{mode === "csv" ? "Выберите CSV-файл" : "Выберите изображение"}</span>
+                <span className="file-dropzone-text">{file ? file.name : "Нажмите сюда, чтобы выбрать файл"}</span>
+              </label>
+            )}
+          </div>
+          <button className="primary" disabled={importMutation.isPending || (mode !== "text" && !file)} onClick={() => importMutation.mutate()}>Распознать</button>
+        </>
+      )}
+
+      {preview && (
+        <>
+          <CandidateReview candidates={preview.candidates} categories={categories} selected={selected} setSelected={setSelected} onError={onError} />
+          <div className="actions">
+            <button className="primary" disabled={confirmMutation.isPending || selected.size === 0} onClick={() => confirmMutation.mutate()}>Подтвердить выбранные</button>
+            <button disabled={confirmMutation.isPending} onClick={() => { setSelected(new Set()); confirmMutation.mutate(); }}>Отклонить все</button>
+            <button onClick={() => setPreview(null)}>Новый импорт</button>
+          </div>
+        </>
+      )}
     </section>
   );
 }
