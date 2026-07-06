@@ -2,6 +2,7 @@
 body { margin: 0; font-family: Inter, Segoe UI, Arial, sans-serif; background: #090c11; color: #ffff; }
 button, input, select, textarea { font: inherit; }
 button { border: 1px solid #5c6166; background: #262B32; border-radius: 10px; padding: 8px 12px; cursor: pointer; color: #ffff; }
+button:hover { border-color: #2078cf; }
 button:disabled { opacity: .55; cursor: wait; }
 input, select, textarea { width: 100%; border: 1px solid #5c6166; border-radius: 10px; padding: 9px 10px; background: #5c6166; color: #fff}
 textarea { min-height: 132px; resize: vertical; }
@@ -29,11 +30,11 @@ h3 { margin: 0; font-size: 15px; color: #fff; }
 .metric span { display: block; opacity: .9; margin-bottom: 8px; }
 .metric strong { font-size: 26px; }
 .metric.neutral { background: #2078cf; padding: 55px 24px; border-radius: 20px; }
-.metric.neutral strong { font-size: 60px; }
-.metric.neutral span { font-size: 24px; opacity: 0.8; }
+.metric.neutral strong { font-size: 48px; }
+.metric.neutral span { font-size: 48px; opacity: 0.8; }
 .metric.good, .metric.bad { padding: 24px 16px; border-radius: 20px; background: #262B32; }
 .metric.good strong, .metric.bad strong {font-size: 28px; }
-.metric.good span, .metric.bad span { font-size: 18px; opacity: 0.6; }
+.metric.good span, .metric.bad span { font-size: 28px; opacity: 0.8; }
 .metric.good strong { color: #41a94f; }
 .metric.bad strong { color: #d64218; }
 .grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: stretch; gap: 14px; margin-bottom: 14px; }
